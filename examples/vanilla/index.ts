@@ -67,6 +67,10 @@ async function bootstrap() {
   const flipVBtn = document.getElementById('flip-v-btn')!;
   const editorCanvas = document.getElementById('editor-canvas') as HTMLCanvasElement;
   const queueLog = document.getElementById('queue-log')!;
+  // Upload-from-device elements
+  const pickPhotoBtn = document.getElementById('pick-photo-btn')!;
+  const photoFileInput = document.getElementById('photo-file-input') as HTMLInputElement;
+  const dropZoneOverlay = document.getElementById('drop-zone-overlay')!;
   
   // Slider values & elements lists
   const sliders = {
@@ -163,12 +167,25 @@ async function bootstrap() {
     }
   };
 
-  // 4. Handle Capture Trigger
+  // ── Shared helper: open editor with any Blob source ──────────────────────
+  const openEditor = async (blob: Blob) => {
+    capturedBlob = blob;
+    camkit.camera.stop(); // no-op if camera was never started
+
+    captureSection.classList.add('hidden');
+    editorSection.classList.remove('hidden');
+
+    resetAdjustments();
+    await activeEditor.load(capturedBlob);
+    applyProcessing();
+  };
+
+  // 4. Handle Camera Capture Trigger
   captureBtn.addEventListener('click', async () => {
     try {
       captureBtn.classList.add('active');
       // Grab high quality raw frames blob with Smart Assist checks and Auto Enhance
-      capturedBlob = await camkit.capture({
+      const blob = await camkit.capture({
         quality: 0.95,
         enableSmartAssist: true,
         autoEnhance: true,
@@ -176,21 +193,54 @@ async function bootstrap() {
           updateSmartAssistUI(result);
         }
       });
-      camkit.camera.stop(); // Stop sensor to save CPU
       captureBtn.classList.remove('active');
-
-      // Transition layouts
-      captureSection.classList.add('hidden');
-      editorSection.classList.remove('hidden');
-
-      // Load image source into WebGL rendering editor pipeline
-      resetAdjustments();
-      await activeEditor.load(capturedBlob);
-      applyProcessing();
+      await openEditor(blob);
     } catch (e) {
       alert('Failed to capture snapshot: ' + e);
       captureBtn.classList.remove('active');
     }
+  });
+
+  // 4b. Upload Photo from device — pick via file browser
+  pickPhotoBtn.addEventListener('click', () => {
+    photoFileInput.value = ''; // reset so same file can be re-selected
+    photoFileInput.click();
+  });
+
+  photoFileInput.addEventListener('change', async () => {
+    const file = photoFileInput.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (JPEG, PNG, WebP or HEIC).');
+      return;
+    }
+    await openEditor(file);
+  });
+
+  // 4c. Drag-and-drop support on the whole capture section
+  captureSection.addEventListener('dragenter', (e) => {
+    e.preventDefault();
+    dropZoneOverlay.classList.remove('hidden');
+  });
+  captureSection.addEventListener('dragover', (e) => {
+    e.preventDefault();
+  });
+  captureSection.addEventListener('dragleave', (e) => {
+    // Only hide when leaving the section itself, not a child element
+    if (!captureSection.contains(e.relatedTarget as Node)) {
+      dropZoneOverlay.classList.add('hidden');
+    }
+  });
+  captureSection.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    dropZoneOverlay.classList.add('hidden');
+    const file = e.dataTransfer?.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Dropped file is not a supported image type.');
+      return;
+    }
+    await openEditor(file);
   });
 
   // 5. Apply WebGL enhancements & preset filters dynamically
@@ -267,6 +317,9 @@ async function bootstrap() {
   retakeBtn.addEventListener('click', async () => {
     editorSection.classList.add('hidden');
     captureSection.classList.remove('hidden');
+    dropZoneOverlay.classList.add('hidden');
+    photoFileInput.value = '';
+    capturedBlob = null;
     
     // Clean editor resources
     activeEditor.destroy();
@@ -335,8 +388,13 @@ async function bootstrap() {
     }
   });
 
-  // Reset Sliders
+  // Reset Sliders & geometry state
   const resetAdjustments = () => {
+    // Reset geometry
+    rotationAngle = 0;
+    flipH = false;
+    flipV = false;
+
     activePreset = 'none';
     presetChips.forEach((c) => {
       if (c.getAttribute('data-preset') === 'none') {
@@ -353,6 +411,20 @@ async function bootstrap() {
       conf.valLabel.textContent = '0';
     });
   };
+
+  // Geometry transform button bindings
+  rotateBtn.addEventListener('click', () => {
+    rotationAngle = ((rotationAngle + 90) % 360) as 0 | 90 | 180 | 270;
+    applyProcessing();
+  });
+  flipHBtn.addEventListener('click', () => {
+    flipH = !flipH;
+    applyProcessing();
+  });
+  flipVBtn.addEventListener('click', () => {
+    flipV = !flipV;
+    applyProcessing();
+  });
 
   // Render active offline queue dispatches list
   const renderQueueLog = (tasks: any[]) => {
