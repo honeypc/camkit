@@ -1,0 +1,23 @@
+{
+  "name": "camkit-example-react",
+  "private": true,
+  "version": "1.0.0",
+  "description": "React integration example for CamKit",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@camkit/core": "workspace:^",
+    "@camkit/types": "workspace:^",
+    "@camkit/react": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "camkit-example-vanilla",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Vanilla JS/TS example for CamKit",
+  "type": "module",
+  "scripts": {
+    "dev": "vite"
+  },
+  "dependencies": {
+    "@camkit/core": "workspace:^",
+    "@camkit/types": "workspace:^",
+    "@camkit/utils": "workspace:^"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

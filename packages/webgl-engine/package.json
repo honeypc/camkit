@@ -1,0 +1,28 @@
+{
+  "name": "@camkit/webgl-engine",
+  "version": "1.0.0",
+  "description": "High-performance GPU-accelerated image adjustments, blend modes, and blurs in WebGL2 with a robust Canvas2D fallback pipeline for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "webgl2",
+    "gpu-image-editor",
+    "canvas2d"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "dependencies": {
+    "@camkit/types": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}

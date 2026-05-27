@@ -1,0 +1,28 @@
+{
+  "name": "@camkit/workers",
+  "version": "1.0.0",
+  "description": "Background thread workers for heavy workloads (Telea fast-marching inpainting, CPU tasks) for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "webworkers",
+    "inpainting",
+    "telea"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "dependencies": {
+    "@camkit/types": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "camkit-playground",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Premium Figma/Lightroom-inspired playground application for CamKit SDK",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@camkit/types": "workspace:^",
+    "@camkit/core": "workspace:^",
+    "@camkit/react": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11"
+  }
+}

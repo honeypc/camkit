@@ -1,0 +1,38 @@
+{
+  "name": "@camkit/react",
+  "version": "1.0.0",
+  "description": "Premium React bindings (hooks and Lightroom-style UI components) for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.{ts,tsx}"
+  },
+  "keywords": [
+    "camkit",
+    "react",
+    "hooks",
+    "components"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0"
+  },
+  "dependencies": {
+    "@camkit/types": "workspace:^",
+    "@camkit/core": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}

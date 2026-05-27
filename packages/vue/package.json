@@ -1,0 +1,32 @@
+{
+  "name": "@camkit/vue",
+  "version": "1.0.0",
+  "description": "Vue 3 composables for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "vue",
+    "composables"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  },
+  "dependencies": {
+    "@camkit/types": "workspace:^",
+    "@camkit/core": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1",
+    "vue": "^3.4.27"
+  }
+}

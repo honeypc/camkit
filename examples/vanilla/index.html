@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CamKit Vanilla TS Creative Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Header bar -->
+    <header class="app-header">
+      <div class="logo-group">
+        <div class="logo-pulse"></div>
+        <h1 class="logo-title">CamKit</h1>
+        <span class="logo-tag">Vanilla Lab</span>
+      </div>
+      <div class="header-actions">
+        <div class="online-indicator">
+          <span class="indicator-dot online"></span>
+          <span class="indicator-text">Online</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="app-body">
+      <!-- Capture Section -->
+      <section id="capture-section" class="studio-card viewport-card">
+        <div class="camera-stream-wrapper">
+          <video id="camera-video" autoplay playsinline class="video-preview"></video>
+          <div class="camera-grid">
+            <div class="grid-line horizontal"></div>
+            <div class="grid-line horizontal"></div>
+            <div class="grid-line vertical"></div>
+            <div class="grid-line vertical"></div>
+          </div>
+        </div>
+        <div class="viewport-controls">
+          <button id="capture-btn" class="shutter-btn" title="Capture Snapshot">
+            <span class="shutter-inner"></span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Editor Section (Initially hidden) -->
+      <section id="editor-section" class="studio-card editor-card hidden">
+        <div class="editor-workspace">
+          <div class="canvas-container">
+            <canvas id="editor-canvas"></canvas>
+            <div class="workspace-badge">Photo Editor Active</div>
+          </div>
+          
+          <div class="workspace-actions">
+            <button id="retake-btn" class="btn secondary-btn">📸 Retake Photo</button>
+          </div>
+        </div>
+
+        <!-- Right Side Adjustment Panel -->
+        <aside class="adjustment-panel">
+          <div class="panel-section smart-assist-card">
+            <h2 class="section-title">Smart Assist Diagnostics</h2>
+            <div class="health-header">
+              <span class="health-badge status-healthy" id="health-status">Healthy</span>
+              <span class="health-score" id="health-score">100%</span>
+            </div>
+            <div class="metrics-grid">
+              <div class="metric-row" id="metric-blur">
+                <span class="metric-label">Sharpness (Blur)</span>
+                <span class="metric-val">0 / 95</span>
+              </div>
+              <div class="metric-row" id="metric-tooDark">
+                <span class="metric-label">Luminance (Dark)</span>
+                <span class="metric-val">0 / 55</span>
+              </div>
+              <div class="metric-row" id="metric-overexposed">
+                <span class="metric-label">Overexposure</span>
+                <span class="metric-val">0% / 22%</span>
+              </div>
+              <div class="metric-row" id="metric-lowContrast">
+                <span class="metric-label">Contrast</span>
+                <span class="metric-val">0 / 38</span>
+              </div>
+              <div class="metric-row" id="metric-resolution">
+                <span class="metric-label">Min Resolution</span>
+                <span class="metric-val">0px / 600px</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel-section">
+            <h2 class="section-title">Color Presets</h2>
+            <div class="presets-row">
+              <button class="preset-chip active" data-preset="none">🚫 Original</button>
+              <button class="preset-chip" data-preset="cinematic">🎬 Cinematic</button>
+              <button class="preset-chip" data-preset="vintage">🎞️ Vintage</button>
+              <button class="preset-chip" data-preset="bw">🌑 B&W</button>
+              <button class="preset-chip" data-preset="retro">🍂 Retro</button>
+              <button class="preset-chip" data-preset="nordic">❄️ Nordic</button>
+            </div>
+          </div>
+          <div class="panel-section">
+            <h2 class="section-title">Geometry & Transform</h2>
+            <div class="transform-row">
+              <button id="rotate-btn" class="preset-chip" title="Rotate 90 Degrees Clockwise">🔄 Rotate 90°</button>
+              <button id="flip-h-btn" class="preset-chip" title="Flip Horizontally">↔️ Flip H</button>
+              <button id="flip-v-btn" class="preset-chip" title="Flip Vertically">↕️ Flip V</button>
+            </div>
+          </div>
+
+          <div class="panel-section scrollable">
+            <h2 class="section-title">Light & Adjustments</h2>
+            
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Exposure</span>
+                <span class="slider-value" id="val-exposure">0</span>
+              </div>
+              <input type="range" id="slider-exposure" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Brightness</span>
+                <span class="slider-value" id="val-brightness">0</span>
+              </div>
+              <input type="range" id="slider-brightness" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Contrast</span>
+                <span class="slider-value" id="val-contrast">0</span>
+              </div>
+              <input type="range" id="slider-contrast" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Saturation</span>
+                <span class="slider-value" id="val-saturation">0</span>
+              </div>
+              <input type="range" id="slider-saturation" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Vibrance</span>
+                <span class="slider-value" id="val-vibrance">0</span>
+              </div>
+              <input type="range" id="slider-vibrance" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Temperature</span>
+                <span class="slider-value" id="val-temperature">0</span>
+              </div>
+              <input type="range" id="slider-temperature" min="-100" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Vignette</span>
+                <span class="slider-value" id="val-vignette">0</span>
+              </div>
+              <input type="range" id="slider-vignette" min="0" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Sharpening</span>
+                <span class="slider-value" id="val-sharpening">0</span>
+              </div>
+              <input type="range" id="slider-sharpening" min="0" max="100" value="0" class="custom-slider">
+            </div>
+
+            <div class="slider-group">
+              <div class="slider-header">
+                <span class="slider-label">Clarity</span>
+                <span class="slider-value" id="val-clarity">0</span>
+              </div>
+              <input type="range" id="slider-clarity" min="0" max="100" value="0" class="custom-slider">
+            </div>
+          </div>
+
+          <div class="panel-section footer-actions">
+            <button id="upload-btn" class="btn primary-btn w-full">🚀 Dispatch to Queue</button>
+            <button id="download-btn" class="btn outline-btn w-full">📥 Save Local Image</button>
+            <button id="reset-btn" class="btn secondary-btn w-full">🔄 Reset All Settings</button>
+          </div>
+        </aside>
+      </section>
+    </main>
+
+    <!-- Bottom Queue Dispatch Logger -->
+    <footer class="app-queue-bar">
+      <h3 class="queue-title">Upload Dispatch Status</h3>
+      <div id="queue-log" class="queue-log-list">
+        <div class="empty-queue-msg">No active dispatches in offline queue.</div>
+      </div>
+    </footer>
+  </div>
+
+  <script type="module" src="/index.ts"></script>
+</body>
+</html>

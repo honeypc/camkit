@@ -1,0 +1,35 @@
+{
+  "name": "@camkit/core",
+  "version": "1.0.0",
+  "description": "Core orchestrator, fluent image editor pipeline, and plugin lifecycle manager for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "core",
+    "image-editor",
+    "pipeline"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "dependencies": {
+    "@camkit/types": "workspace:^",
+    "@camkit/utils": "workspace:^",
+    "@camkit/camera": "workspace:^",
+    "@camkit/uploader": "workspace:^",
+    "@camkit/webgl-engine": "workspace:^",
+    "@camkit/image-tools": "workspace:^",
+    "@camkit/filters": "workspace:^",
+    "@camkit/workers": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}

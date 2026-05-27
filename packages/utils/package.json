@@ -1,0 +1,28 @@
+{
+  "name": "@camkit/utils",
+  "version": "1.0.0",
+  "description": "Exif parsers, orientation correction, and color profile converters for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "utils",
+    "exif",
+    "color-management"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "dependencies": {
+    "@camkit/types": "workspace:^"
+  },
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}

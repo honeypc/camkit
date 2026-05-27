@@ -1,0 +1,23 @@
+{
+  "name": "@camkit/types",
+  "version": "1.0.0",
+  "description": "Shared TypeScript types for CamKit SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "lint": "eslint src/**/*.ts"
+  },
+  "keywords": [
+    "camkit",
+    "types"
+  ],
+  "author": "Antigravity CamKit Team",
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^3.9.1"
+  }
+}
