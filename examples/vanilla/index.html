@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="CamKit Vanilla TS demo — multi-step guided document capture, photo editor, and resilient upload workflow">
   <title>CamKit Vanilla TS Creative Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10,7 +11,7 @@
 </head>
 <body>
   <div class="app-layout">
-    <!-- Header bar -->
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
     <header class="app-header">
       <div class="logo-group">
         <div class="logo-pulse"></div>
@@ -26,13 +27,66 @@
     </header>
 
     <main class="app-body">
-      <!-- Capture Section -->
-      <section id="capture-section" class="studio-card viewport-card">
-        <!-- Hidden file input for photo upload -->
+
+      <!-- ══ MODE SELECTION (initial landing screen) ═══════════════════════ -->
+      <section id="mode-section" class="studio-card mode-card">
+        <div class="mode-header">
+          <h2 class="mode-title">Select Capture Mode</h2>
+          <p class="mode-subtitle">Choose a guided document flow or take a single photo</p>
+        </div>
+        <div class="flow-grid">
+
+          <button class="flow-card" id="flow-single" data-flow="single">
+            <div class="flow-icon">📷</div>
+            <div class="flow-info">
+              <div class="flow-name">Single Photo</div>
+              <div class="flow-desc">Take or upload one photo, then edit with full adjustments</div>
+            </div>
+          </button>
+
+          <button class="flow-card" id="flow-id-card" data-flow="id-card">
+            <div class="flow-icon">🪪</div>
+            <div class="flow-info">
+              <div class="flow-name">ID Card</div>
+              <div class="flow-desc">Front &amp; back capture with card frame alignment guide</div>
+            </div>
+            <span class="flow-badge">2 steps</span>
+          </button>
+
+          <button class="flow-card" id="flow-passport" data-flow="passport">
+            <div class="flow-icon">🛂</div>
+            <div class="flow-info">
+              <div class="flow-name">Passport</div>
+              <div class="flow-desc">Biometric data page with document frame guide</div>
+            </div>
+            <span class="flow-badge">1 step</span>
+          </button>
+
+          <button class="flow-card" id="flow-selfie-id" data-flow="selfie-id">
+            <div class="flow-icon">🤳</div>
+            <div class="flow-info">
+              <div class="flow-name">Selfie + ID</div>
+              <div class="flow-desc">Face verification followed by ID card capture</div>
+            </div>
+            <span class="flow-badge">2 steps</span>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- ══ CAMERA CAPTURE SECTION ════════════════════════════════════════ -->
+      <section id="capture-section" class="studio-card viewport-card hidden">
+        <!-- Hidden file input (single mode) -->
         <input type="file" id="photo-file-input" accept="image/jpeg,image/png,image/webp,image/heic" hidden>
 
-        <div class="camera-stream-wrapper">
+        <!-- "← Change Mode" back button -->
+        <button id="back-to-mode-btn" class="back-mode-btn">← Change Mode</button>
+
+        <!-- Camera stream area -->
+        <div class="camera-stream-wrapper" id="camera-stream-wrapper">
           <video id="camera-video" autoplay playsinline class="video-preview"></video>
+
+          <!-- Rule-of-thirds grid overlay -->
           <div class="camera-grid">
             <div class="grid-line horizontal"></div>
             <div class="grid-line horizontal"></div>
@@ -40,7 +94,18 @@
             <div class="grid-line vertical"></div>
           </div>
 
-          <!-- Drag-and-drop overlay (activated during drag) -->
+          <!-- Document frame guide (multi-step mode) -->
+          <div id="frame-overlay" class="frame-overlay hidden">
+            <div id="frame-window" class="frame-window">
+              <div class="frame-corner tl"></div>
+              <div class="frame-corner tr"></div>
+              <div class="frame-corner bl"></div>
+              <div class="frame-corner br"></div>
+              <span class="frame-inner-label" id="frame-inner-label"></span>
+            </div>
+          </div>
+
+          <!-- Drag-and-drop overlay (single mode) -->
           <div id="drop-zone-overlay" class="drop-zone-overlay hidden">
             <div class="drop-zone-content">
               <span class="drop-icon">🖼️</span>
@@ -49,37 +114,75 @@
           </div>
         </div>
 
+        <!-- Step breadcrumbs + instruction (multi-step mode) -->
+        <div id="step-indicator" class="step-indicator hidden">
+          <div id="step-breadcrumbs" class="step-breadcrumbs"></div>
+          <p class="step-instruction-text" id="step-instruction"></p>
+        </div>
+
+        <!-- Shutter + upload controls -->
         <div class="viewport-controls">
           <button id="capture-btn" class="shutter-btn" title="Capture Snapshot">
             <span class="shutter-inner"></span>
           </button>
 
-          <div class="upload-divider">
-            <span class="divider-line"></span>
-            <span class="divider-text">or</span>
-            <span class="divider-line"></span>
+          <!-- Upload from device — single mode only -->
+          <div id="single-mode-extras" class="single-mode-extras hidden">
+            <div class="upload-divider">
+              <span class="divider-line"></span>
+              <span class="divider-text">or</span>
+              <span class="divider-line"></span>
+            </div>
+            <button id="pick-photo-btn" class="btn pick-photo-btn">📁 Upload Photo</button>
           </div>
-
-          <button id="pick-photo-btn" class="btn pick-photo-btn" title="Upload a photo from your device">
-            📁 Upload Photo
-          </button>
         </div>
       </section>
 
-      <!-- Editor Section (Initially hidden) -->
+      <!-- ══ STEP REVIEW (keep or retake per step) ══════════════════════════ -->
+      <section id="step-review-section" class="studio-card step-review-card hidden">
+        <div class="review-layout">
+          <div class="review-preview-area">
+            <img id="review-preview-img" class="review-preview-img" alt="Captured photo preview">
+            <div class="review-step-badge" id="review-step-badge"></div>
+          </div>
+          <div class="review-sidebar">
+            <div class="review-flow-label" id="review-flow-label"></div>
+            <div class="review-step-name" id="review-step-name"></div>
+            <p class="review-step-instruction" id="review-step-instruction"></p>
+            <div class="review-actions">
+              <button id="review-retake-btn" class="btn secondary-btn w-full">🔄 Retake Photo</button>
+              <button id="review-confirm-btn" class="btn primary-btn w-full">✓ Use This Photo →</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ MULTI SUMMARY (final review grid before submit) ════════════════ -->
+      <section id="multi-summary-section" class="studio-card summary-card hidden">
+        <div class="summary-header">
+          <h2 class="summary-title" id="summary-title">Capture Complete</h2>
+          <p class="summary-subtitle" id="summary-subtitle">Review your photos before submitting</p>
+        </div>
+        <div id="summary-captures-grid" class="summary-captures-grid"></div>
+        <div class="summary-actions">
+          <button id="summary-startover-btn" class="btn secondary-btn">↩ Start Over</button>
+          <button id="summary-dispatch-btn" class="btn primary-btn">🚀 Submit All Photos</button>
+        </div>
+      </section>
+
+      <!-- ══ PHOTO EDITOR ═══════════════════════════════════════════════════ -->
       <section id="editor-section" class="studio-card editor-card hidden">
         <div class="editor-workspace">
           <div class="canvas-container">
             <canvas id="editor-canvas"></canvas>
-            <div class="workspace-badge">Photo Editor Active</div>
+            <div class="workspace-badge" id="editor-badge">Photo Editor Active</div>
           </div>
-          
           <div class="workspace-actions">
             <button id="retake-btn" class="btn secondary-btn">📸 New Photo</button>
           </div>
         </div>
 
-        <!-- Right Side Adjustment Panel -->
+        <!-- Right-side adjustment panel -->
         <aside class="adjustment-panel">
           <div class="panel-section smart-assist-card">
             <h2 class="section-title">Smart Assist Diagnostics</h2>
@@ -117,92 +220,58 @@
               <button class="preset-chip active" data-preset="none">🚫 Original</button>
               <button class="preset-chip" data-preset="cinematic">🎬 Cinematic</button>
               <button class="preset-chip" data-preset="vintage">🎞️ Vintage</button>
-              <button class="preset-chip" data-preset="bw">🌑 B&W</button>
+              <button class="preset-chip" data-preset="bw">🌑 B&amp;W</button>
               <button class="preset-chip" data-preset="retro">🍂 Retro</button>
               <button class="preset-chip" data-preset="nordic">❄️ Nordic</button>
             </div>
           </div>
+
           <div class="panel-section">
-            <h2 class="section-title">Geometry & Transform</h2>
+            <h2 class="section-title">Geometry &amp; Transform</h2>
             <div class="transform-row">
-              <button id="rotate-btn" class="preset-chip" title="Rotate 90 Degrees Clockwise">🔄 Rotate 90°</button>
+              <button id="rotate-btn" class="preset-chip" title="Rotate 90° Clockwise">🔄 Rotate 90°</button>
               <button id="flip-h-btn" class="preset-chip" title="Flip Horizontally">↔️ Flip H</button>
               <button id="flip-v-btn" class="preset-chip" title="Flip Vertically">↕️ Flip V</button>
             </div>
           </div>
 
           <div class="panel-section scrollable">
-            <h2 class="section-title">Light & Adjustments</h2>
-            
+            <h2 class="section-title">Light &amp; Adjustments</h2>
+
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Exposure</span>
-                <span class="slider-value" id="val-exposure">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Exposure</span><span class="slider-value" id="val-exposure">0</span></div>
               <input type="range" id="slider-exposure" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Brightness</span>
-                <span class="slider-value" id="val-brightness">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Brightness</span><span class="slider-value" id="val-brightness">0</span></div>
               <input type="range" id="slider-brightness" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Contrast</span>
-                <span class="slider-value" id="val-contrast">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Contrast</span><span class="slider-value" id="val-contrast">0</span></div>
               <input type="range" id="slider-contrast" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Saturation</span>
-                <span class="slider-value" id="val-saturation">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Saturation</span><span class="slider-value" id="val-saturation">0</span></div>
               <input type="range" id="slider-saturation" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Vibrance</span>
-                <span class="slider-value" id="val-vibrance">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Vibrance</span><span class="slider-value" id="val-vibrance">0</span></div>
               <input type="range" id="slider-vibrance" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Temperature</span>
-                <span class="slider-value" id="val-temperature">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Temperature</span><span class="slider-value" id="val-temperature">0</span></div>
               <input type="range" id="slider-temperature" min="-100" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Vignette</span>
-                <span class="slider-value" id="val-vignette">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Vignette</span><span class="slider-value" id="val-vignette">0</span></div>
               <input type="range" id="slider-vignette" min="0" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Sharpening</span>
-                <span class="slider-value" id="val-sharpening">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Sharpening</span><span class="slider-value" id="val-sharpening">0</span></div>
               <input type="range" id="slider-sharpening" min="0" max="100" value="0" class="custom-slider">
             </div>
-
             <div class="slider-group">
-              <div class="slider-header">
-                <span class="slider-label">Clarity</span>
-                <span class="slider-value" id="val-clarity">0</span>
-              </div>
+              <div class="slider-header"><span class="slider-label">Clarity</span><span class="slider-value" id="val-clarity">0</span></div>
               <input type="range" id="slider-clarity" min="0" max="100" value="0" class="custom-slider">
             </div>
           </div>
@@ -214,9 +283,10 @@
           </div>
         </aside>
       </section>
+
     </main>
 
-    <!-- Bottom Queue Dispatch Logger -->
+    <!-- ── Upload Queue Status Bar ────────────────────────────────────────── -->
     <footer class="app-queue-bar">
       <h3 class="queue-title">Upload Dispatch Status</h3>
       <div id="queue-log" class="queue-log-list">

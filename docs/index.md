@@ -254,4 +254,152 @@ pnpm --filter camkit-playground dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
+---
 
+## 8. Multi-Step Capture with Frame Guides
+
+CamKit provides a configurable **multi-step capture session API** that walks users through sequential photo captures, each with an optional visual frame overlay on the live camera stream. This is ideal for document verification flows (KYC, insurance claims, ID card capture) where multiple photos must be taken and reviewed in order.
+
+### 8.1. Core Types
+
+| Type | Description |
+|------|-------------|
+| `CaptureFrameType` | `'card-landscape' \| 'card-portrait' \| 'passport' \| 'square' \| 'face' \| 'custom'` |
+| `CaptureFrame` | Frame overlay config: `type`, `color`, `vignetteOpacity`, `label`, `aspectRatio` |
+| `CaptureStep` | A single step: `id`, `label`, `instruction`, `icon?`, `frame?` |
+| `CaptureStepResult` | Confirmed step output: `step`, `blob`, `objectUrl`, `timestamp` |
+| `MultiCaptureConfig` | Session config: `title`, `steps[]`, `onStepCapture`, `onAllComplete` |
+
+### 8.2. Pre-built Preset Frame Ratios
+
+| Frame Type | Aspect Ratio | Real-World Standard |
+|------------|-------------|---------------------|
+| `card-landscape` | 1.585 : 1 | ISO/IEC 7810 ID-1 (credit card) |
+| `card-portrait`  | 0.631 : 1 | Same card, portrait orientation |
+| `passport`       | 1.420 : 1 | ICAO 9303 biometric page |
+| `square`         | 1 : 1     | Square format |
+| `face`           | 0.750 : 1 | Portrait oval for selfie/liveness |
+| `custom`         | user-defined | Set `aspectRatio` explicitly |
+
+### 8.3. Usage Example
+
+```ts
+import { CamKit } from '@camkit/core';
+import type { MultiCaptureConfig, CaptureStepResult } from '@camkit/core';
+
+const camkit = new CamKit({ /* uploader config */ });
+
+// Define your capture flow
+const config: MultiCaptureConfig = {
+  title: 'ID Card Capture',
+  steps: [
+    {
+      id: 'id-front',
+      icon: '🪪',
+      label: 'Front Side',
+      instruction: 'Place the FRONT of your ID card within the frame.',
+      frame: {
+        type: 'card-landscape',
+        label: 'ID Card — Front Side',
+        color: '#9d4edd',
+        vignetteOpacity: 0.6
+      }
+    },
+    {
+      id: 'id-back',
+      icon: '🔄',
+      label: 'Back Side',
+      instruction: 'Flip your card and place the BACK within the frame.',
+      frame: {
+        type: 'card-landscape',
+        label: 'ID Card — Back Side',
+        color: '#9d4edd',
+        vignetteOpacity: 0.6
+      }
+    }
+  ],
+  onStepCapture: (result: CaptureStepResult, index: number) => {
+    console.log(`Step ${index + 1} confirmed: ${result.step.label}`);
+    // Show thumbnail preview, update progress UI, etc.
+  },
+  onAllComplete: async (results: CaptureStepResult[]) => {
+    // All steps confirmed — dispatch to uploader
+    for (const r of results) {
+      await camkit.upload(r.blob, { stepId: r.step.id, label: r.step.label });
+      URL.revokeObjectURL(r.objectUrl); // free memory
+    }
+  }
+};
+```
+
+### 8.4. Frame Overlay Rendering
+
+The frame overlay uses a CSS `box-shadow` trick on an absolutely-positioned element to create a dark vignette **outside** the transparent frame window. Corner L-markers are drawn with pure CSS borders. For `face` frames the window uses `border-radius: 50%` to render an oval with the corner markers hidden automatically.
+
+```
+┌─────────────────────────────────────┐
+│  ████████████████████████████████  │  ← dark vignette (rgba box-shadow)
+│  █  ┌───────────────────────┐  █  │
+│  █  │  [frame window]       │  █  │  ← transparent cutout (configurable aspect ratio)
+│  █  │  ID Card — Front Side │  █  │
+│  █  └───────────────────────┘  █  │
+│  ████████████████████████████████  │
+└─────────────────────────────────────┘
+```
+
+### 8.5. Vanilla Example Flows
+
+The bundled vanilla example at `examples/vanilla/` ships with 3 ready-to-use flows demonstrable from the mode selection screen:
+
+| Flow | Steps | Frame Type |
+|------|-------|------------|
+| **ID Card** | Front → Back | `card-landscape` (purple) |
+| **Passport** | Bio Page | `passport` (green) |
+| **Selfie + ID** | Selfie → ID Front | `face` (blue) + `card-landscape` (purple) |
+
+**App Screens:**
+1. **Mode Selection** — Flow cards with step count badges
+2. **Camera + Frame** — Live stream with frame overlay + step breadcrumbs + instruction text
+3. **Step Review** — Full-size preview with keep / retake decision
+4. **Summary Grid** — Thumbnail grid of all captures with per-step "✏️ Edit" access
+5. **Editor** — Full adjustment panel (presets, geometry, 9 sliders, Smart Assist HUD)
+
+### 8.6. Memory Management
+
+- Each confirmed step result carries an `objectUrl` created via `URL.createObjectURL`.
+- Call `URL.revokeObjectURL(result.objectUrl)` when the preview is no longer needed.
+- The vanilla example automatically revokes URLs on "Start Over" and after editor edits are saved.
+
+---
+
+## 9. Running the Examples & Playground
+
+Each example in this repository is designed as a standalone Vite development server inside our pnpm monorepo. 
+
+### 9.1. Running the Vanilla JS/TS Example
+To run the Vanilla JS/TS sandbox locally:
+```bash
+pnpm --filter camkit-example-vanilla dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### 9.2. Running the React Example
+To run the React hooks & components workspace:
+```bash
+pnpm --filter camkit-example-react dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### 9.3. Running the Vue 3 Example
+To run the Vue 3 composables workspace:
+```bash
+pnpm --filter camkit-example-vue dev
+```
+Open [http://localhost:5173](http://localhost:5173) in your browser.
+
+### 9.4. Running the Creative Studio Playground App
+To run our flagship Lightroom/Figma-like visual editor app:
+```bash
+pnpm --filter camkit-playground dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.

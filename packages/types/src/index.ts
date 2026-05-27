@@ -241,3 +241,93 @@ export interface CamKitPlugin {
   setup?: (camkit: any) => void;
   hooks?: PluginLifecycleHooks;
 }
+
+// ── Multi-Step Capture Types ──────────────────────────────────────────────────
+
+/**
+ * Visual frame overlay guide shown on the live camera stream during capture.
+ * Uses a CSS box-shadow vignette around a transparent window of the specified
+ * aspect ratio, with corner markers and an optional label inside the frame.
+ */
+export type CaptureFrameType =
+  | 'card-landscape'   // ISO/IEC 7810 ID-1 credit-card format — 85.6 × 54 mm (~1.585 : 1)
+  | 'card-portrait'    // Same card rotated — 54 × 85.6 mm
+  | 'passport'         // ICAO 9303 biometric page — 125 × 88 mm (~1.420 : 1)
+  | 'square'           // 1 : 1
+  | 'face'             // Portrait oval for selfie / liveness — 0.75 : 1
+  | 'custom';          // Use aspectRatio override
+
+export interface CaptureFrame {
+  /** Frame shape and preset aspect ratio */
+  type: CaptureFrameType;
+  /** Custom aspect ratio (width / height) — only used when type === 'custom' */
+  aspectRatio?: number;
+  /** Text label shown at the bottom-inside of the frame guide */
+  label?: string;
+  /** Border and corner accent colour (CSS colour string — default: '#ffffff') */
+  color?: string;
+  /** Opacity of the dark vignette rendered outside the frame window (0–1, default: 0.55) */
+  vignetteOpacity?: number;
+}
+
+/**
+ * A single step in a multi-step capture session.
+ * Each step can optionally have a frame guide overlay.
+ */
+export interface CaptureStep {
+  /** Unique identifier for this step (used in upload metadata) */
+  id: string;
+  /** Emoji or short icon shown in step breadcrumb pill */
+  icon?: string;
+  /** Short display name shown in step breadcrumbs, e.g. "Front Side" */
+  label: string;
+  /** Detailed user-facing instruction shown below the camera stream */
+  instruction: string;
+  /** Optional frame overlay guide config */
+  frame?: CaptureFrame;
+}
+
+/**
+ * The result produced after a single step is confirmed by the user.
+ */
+export interface CaptureStepResult {
+  /** Reference to the originating step config */
+  step: CaptureStep;
+  /** Raw captured image blob */
+  blob: Blob;
+  /** Pre-created object URL for preview (call URL.revokeObjectURL when done) */
+  objectUrl: string;
+  /** Unix timestamp of capture */
+  timestamp: number;
+}
+
+/**
+ * Configuration for a multi-step capture session.
+ *
+ * @example
+ * ```ts
+ * const config: MultiCaptureConfig = {
+ *   title: 'ID Card Capture',
+ *   steps: [
+ *     { id: 'id-front', icon: '🪪', label: 'Front Side',
+ *       instruction: 'Place the front of your ID card within the frame.',
+ *       frame: { type: 'card-landscape', color: '#9d4edd' } },
+ *     { id: 'id-back', icon: '🔄', label: 'Back Side',
+ *       instruction: 'Now flip and place the back of your ID card.',
+ *       frame: { type: 'card-landscape', color: '#9d4edd' } }
+ *   ],
+ *   onStepCapture: (result, index) => console.log(`Step ${index} done`),
+ *   onAllComplete: (results) => uploadAll(results)
+ * };
+ * ```
+ */
+export interface MultiCaptureConfig {
+  /** Session title displayed in the UI header */
+  title?: string;
+  /** Ordered array of capture steps */
+  steps: CaptureStep[];
+  /** Called after each individual step is confirmed by the user */
+  onStepCapture?: (result: CaptureStepResult, stepIndex: number) => void;
+  /** Called when all steps have been confirmed */
+  onAllComplete?: (results: CaptureStepResult[]) => void;
+}
