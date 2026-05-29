@@ -1,7 +1,7 @@
 {
-  "name": "camkit-monorepo",
-  "private": true,
-  "version": "1.0.2",
+  "name": "camkit",
+  "private": false,
+  "version": "1.0.1",
   "description": "Framework-agnostic camera capture, photo processing, and upload SDK",
   "scripts": {
     "build": "turbo run build",
@@ -9,7 +9,8 @@
     "test": "turbo run test",
     "lint": "turbo run lint",
     "format": "prettier --write \"packages/**/*.{ts,tsx,js,jsx,json,md}\" \"apps/**/*.{ts,tsx,js,jsx,json,md}\"",
-    "docs": "typedoc"
+    "docs": "typedoc",
+    "release": "npm publish --access public"
   },
   "keywords": [
     "camera",
@@ -21,7 +22,7 @@
     "vue",
     "typescript"
   ],
-  "author": "Antigravity CamKit Team",
+  "author": "CamKit Team",
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
@@ -34,5 +35,8 @@
   "packageManager": "pnpm@9.1.0",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
