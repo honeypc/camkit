@@ -1,7 +1,7 @@
 {
   "name": "camkit-monorepo",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Framework-agnostic camera capture, photo processing, and upload SDK",
   "scripts": {
     "build": "turbo run build",
